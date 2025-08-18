@@ -5,12 +5,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Fortune Wheel</title>
 <style>
-  body { font-family: sans-serif; background:#222; color:#fff; text-align:center; padding-top:40px;}
-  #wheel-container { position: relative; margin: 20px auto; width: 320px; height: 320px;}
-  #pointer { position:absolute; top:-30px; left:50%; transform:translateX(-50%); font-size:2.6em; z-index:10;}
-  #spinBtn { margin-top:10px; padding:12px 32px; font-size:1.2em; cursor:pointer; border:none; border-radius:8px; background:#FFD700; color:#333; font-weight:bold;}
-  #money { margin-top:12px; font-size:1.2em; font-weight:bold; color:#0f0;}
-  #result { margin-top:16px; font-size:1.4em; font-weight:bold; min-height:2em;}
+  body { font-family: sans-serif; background:#222; color:#fff; text-align:center; padding-top:40px; }
+  #wheel-container { position: relative; margin: 20px auto; width: 320px; height: 320px; }
+  #pointer { position:absolute; top:-30px; left:50%; transform:translateX(-50%); font-size:2.6em; z-index:10; }
+  #spinBtn { margin-top:10px; padding:12px 32px; font-size:1.2em; cursor:pointer; border:none; border-radius:8px; background:#FFD700; color:#333; font-weight:bold; }
+  #money { margin-top:12px; font-size:1.2em; font-weight:bold; color:#0f0; }
+  #result { margin-top:16px; font-size:1.4em; font-weight:bold; min-height:2em; }
 </style>
 </head>
 <body>
@@ -89,6 +89,18 @@ document.addEventListener("DOMContentLoaded", () => {
       ctx.fillText(slices[i].label, radius*0.55, 20);
       ctx.restore();
     }
+
+    // Draw center circle
+    ctx.beginPath();
+    ctx.arc(cx, cy, 40, 0, 2*Math.PI);
+    ctx.fillStyle="#FFD700";
+    ctx.fill();
+    ctx.strokeStyle="#B09700";
+    ctx.lineWidth=4;
+    ctx.stroke();
+    ctx.fillStyle="#333";
+    ctx.font="24px serif";
+    ctx.fillText("🎯", cx, cy);
   }
 
   drawWheel();
@@ -110,8 +122,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const extraSpins=4;
     const finalRotation=(2*Math.PI*extraSpins)+stopAngle;
     const duration=3000;
-    const startTime=null;
-
     const startRotation=wheelRotation;
     const start=performance.now();
 
@@ -135,7 +145,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     requestAnimationFrame(animate);
-  }
+  };
 });
 </script>
 </body>
