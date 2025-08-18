@@ -160,7 +160,7 @@
         ctx.fill();
         ctx.save();
 
-        // Draw emoji + label
+        // Draw emoji + label centered
         ctx.translate(centerX, centerY);
         ctx.rotate(angle + sliceAngle / 2);
         ctx.textAlign = 'center';
@@ -168,12 +168,12 @@
 
         // Emoji
         ctx.font = "2.2em serif";
-        ctx.fillText(slices[i].emoji, radius * 0.5, -5);
+        ctx.fillText(slices[i].emoji, radius * 0.55, -8);
 
         // Label
         ctx.font = "bold 0.9em sans-serif";
         ctx.fillStyle = "#222";
-        ctx.fillText(slices[i].label, radius * 0.5, 20);
+        ctx.fillText(slices[i].label, radius * 0.55, 18);
 
         ctx.restore();
       }
@@ -235,3 +235,14 @@
 
           // Reward
           const prize = slices[pickedIndex];
+          money += prize.reward;
+          moneyDiv.textContent = `Money: $${money}`;
+          resultDiv.textContent = `You won ${prize.emoji} ${prize.label}! (+$${prize.reward})`;
+        }
+      }
+
+      requestAnimationFrame(animateWheel);
+    };
+  </script>
+</body>
+</html>
