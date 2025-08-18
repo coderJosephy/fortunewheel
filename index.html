@@ -93,18 +93,18 @@
   <script>
     // Wheel slices with rewards
     const slices = [
-      { emoji: "💰", label: "Super Jackpot", reward: 1000 }, // upgraded!
-      { emoji: "🧧", label: "Jackpot", reward: 500 },       // new one
-      { emoji: "🍀", label: "Lucky", reward: 100 },
-      { emoji: "😃", label: "Smile", reward: 30 },
+      { emoji: "💰", label: "Super Jackpot", reward: 1000 },
+      { emoji: "🎲", label: "Jackpot", reward: 500 },
+      { emoji: "🍀", label: "Lucky", reward: 35 },
+      { emoji: "😃", label: "Smile", reward: 25 },
       { emoji: "🧁", label: "Treat", reward: 10 },
-      { emoji: "🎉", label: "Party", reward: 150 },
-      { emoji: "🔮", label: "Mystery", reward: 50 },
-      { emoji: "🌈", label: "Rainbow", reward: 200 },
-      { emoji: "💎", label: "Gem", reward: 250 }
+      { emoji: "🎉", label: "Party", reward: 75 },
+      { emoji: "🔮", label: "Mystery", reward: 45 },
+      { emoji: "🌈", label: "Rainbow", reward: 125 },
+      { emoji: "💎", label: "Gem", reward: 200 }
     ];
     
-    // Added one more color for the new Jackpot slice
+    // Added color for the new Jackpot slice
     const colors = [
       "#FF6384", "#FFD700", "#36A2EB", "#FFCE56", 
       "#4BC0C0", "#9966FF", "#FF9F40", "#50C878", "#E2E2E2"
@@ -149,15 +149,21 @@
         ctx.translate(centerX, centerY);
         ctx.rotate(angle + sliceAngle / 2);
         ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+
+        // Emoji
         ctx.font = "2.2em serif";
-        ctx.fillText(slices[i].emoji, radius * 0.62, 18);
-        ctx.font = "bold 1em sans-serif";
+        ctx.fillText(slices[i].emoji, radius * 0.5, -5);
+
+        // Label (slightly smaller & centered so it doesn’t cut off)
+        ctx.font = "bold 0.9em sans-serif";
         ctx.fillStyle = "#222";
-        ctx.fillText(slices[i].label, radius * 0.62, 44);
+        ctx.fillText(slices[i].label, radius * 0.5, 22);
+
         ctx.restore();
       }
 
-      // Draw center
+      // Draw center button
       ctx.beginPath();
       ctx.arc(centerX, centerY, 38, 0, 2 * Math.PI);
       ctx.fillStyle = "#FFD700";
