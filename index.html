@@ -73,6 +73,7 @@
       font-size: 1.4em;
       font-weight: bold;
       min-height: 2em;
+      text-align: center;
     }
   </style>
 </head>
@@ -87,7 +88,6 @@
   <div id="result"></div>
 
   <script>
-    // Wheel slices with rewards
     const slices = [
       { emoji: "💰", label: "Super Jackpot", reward: 1000 },
       { emoji: "🧧", label: "Jackpot", reward: 500 },
@@ -100,13 +100,11 @@
       { emoji: "💎", label: "Gem", reward: 200 }
     ];
 
-    // Slice colors
     const colors = [
       "#FF6384", "#36A2EB", "#FFCE56", "#4BC0C0",
       "#9966FF", "#FF9F40", "#50C878", "#E2E2E2", "#FF69B4"
     ];
 
-    // Weighted probabilities (must sum ≈ 1.0)
     const weights = [
       0.02, // Super Jackpot 💰
       0.05, // Jackpot 🧧
@@ -126,11 +124,10 @@
     const moneyDiv = document.getElementById('money');
 
     let spinning = false;
-    let wheelRotation = 0; // radians
+    let wheelRotation = 0;
     let money = 1000;
     const spinCost = 50;
 
-    // Weighted random index
     function weightedRandom(weights) {
       let r = Math.random();
       let sum = 0;
@@ -138,10 +135,9 @@
         sum += weights[i];
         if (r <= sum) return i;
       }
-      return weights.length - 1; // fallback
+      return weights.length - 1;
     }
 
-    // Draw the wheel
     function drawWheel(rotation = 0) {
       const radius = wheelCanvas.width / 2;
       const centerX = wheelCanvas.width / 2;
@@ -149,100 +145,3 @@
       const sliceAngle = (2 * Math.PI) / slices.length;
 
       ctx.clearRect(0, 0, wheelCanvas.width, wheelCanvas.height);
-
-      for (let i = 0; i < slices.length; i++) {
-        const angle = rotation + i * sliceAngle;
-        ctx.beginPath();
-        ctx.moveTo(centerX, centerY);
-        ctx.arc(centerX, centerY, radius, angle, angle + sliceAngle, false);
-        ctx.closePath();
-        ctx.fillStyle = colors[i % colors.length];
-        ctx.fill();
-        ctx.save();
-
-        // Draw emoji + label centered
-        ctx.translate(centerX, centerY);
-        ctx.rotate(angle + sliceAngle / 2);
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-
-        // Emoji
-        ctx.font = "2.2em serif";
-        ctx.fillText(slices[i].emoji, radius * 0.55, -8);
-
-        // Label
-        ctx.font = "bold 0.9em sans-serif";
-        ctx.fillStyle = "#222";
-        ctx.fillText(slices[i].label, radius * 0.55, 18);
-
-        ctx.restore();
-      }
-
-      // Center button
-      ctx.beginPath();
-      ctx.arc(centerX, centerY, 38, 0, 2 * Math.PI);
-      ctx.fillStyle = "#FFD700";
-      ctx.fill();
-      ctx.strokeStyle = "#B09700";
-      ctx.lineWidth = 4;
-      ctx.stroke();
-      ctx.font = "1.8em serif";
-      ctx.fillStyle = "#333";
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillText("🎯", centerX, centerY);
-    }
-
-    drawWheel();
-
-    // Spin logic
-    spinBtn.onclick = function () {
-      if (spinning) return;
-      if (money < spinCost) {
-        resultDiv.textContent = "Not enough money!";
-        return;
-      }
-      spinning = true;
-      money -= spinCost;
-      moneyDiv.textContent = `Money: $${money}`;
-      resultDiv.textContent = "";
-
-      const sliceAngle = 2 * Math.PI / slices.length;
-      const pickedIndex = weightedRandom(weights);
-
-      const stopAngle = (3 * Math.PI / 2) - (pickedIndex * sliceAngle) - (sliceAngle / 2);
-      const extraSpins = 4;
-      const finalRotation = (2 * Math.PI * extraSpins) + stopAngle;
-
-      let start = null;
-      let duration = 3000;
-      let initialRotation = wheelRotation;
-
-      function animateWheel(ts) {
-        if (!start) start = ts;
-        let elapsed = ts - start;
-        let progress = Math.min(elapsed / duration, 1);
-        let eased = 1 - Math.pow(1 - progress, 3);
-        wheelRotation = initialRotation + eased * (finalRotation - initialRotation);
-        drawWheel(wheelRotation);
-
-        if (progress < 1) {
-          requestAnimationFrame(animateWheel);
-        } else {
-          spinning = false;
-          wheelRotation = finalRotation % (2 * Math.PI);
-          drawWheel(wheelRotation);
-
-          // Reward
-          const prize = slices[pickedIndex];
-          money += prize.reward;
-          moneyDiv.textContent = `Money: $${money}`;
-          resultDiv.textContent = `You won ${prize.emoji} ${prize.label}! (+$${prize.reward})`;
-        }
-      }
-
-      requestAnimationFrame(animateWheel);
-    };
-  </script>
-</body>
-</html>
