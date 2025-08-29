@@ -46,4 +46,205 @@
       text-shadow: 0 2px 8px #000;
     }
     #spinBtn {
-      background: #F
+      background: #FFD700;
+      color: #333;
+      border: none;
+      border-radius: 8px;
+      padding: 12px 32px;
+      font-size: 1.2em;
+      cursor: pointer;
+      font-weight: bold;
+      margin-top: 10px;
+      margin-bottom: 12px;
+      box-shadow: 0 4px 12px #2228;
+      transition: background 0.2s;
+    }
+    #spinBtn:active {
+      background: #e6c200;
+    }
+    #money {
+      font-size: 1.2em;
+      margin-bottom: 12px;
+      font-weight: bold;
+      color: #0f0;
+    }
+    #result {
+      margin-top: 16px;
+      font-size: 1.4em;
+      font-weight: bold;
+      min-height: 2em;
+    }
+  </style>
+</head>
+<body>
+  <h1>🎰 Fortune Wheel</h1>
+  <div id="wheel-container">
+    <div id="pointer">🔻</div>
+    <canvas id="wheel" width="360" height="360"></canvas>
+  </div>
+  <div id="money">Money: $1000</div>
+  <button id="spinBtn">Spin! (-$100)</button>
+  <div id="result"></div>
+
+  <script>
+    // Wheel slices with rewards
+    const slices = [
+      { emoji: "💰", label: "Super Jackpot", reward: 1000 },
+      { emoji: "🧧", label: "Jackpot", reward: 500 },
+      { emoji: "🍀", label: "Lucky", reward: 150 },
+      { emoji: "😃", label: "Smile", reward: 65 },
+      { emoji: "🧁", label: "Treat", reward: 50 },
+      { emoji: "🎉", label: "Party", reward: 250 },
+      { emoji: "🔮", label: "Mystery", reward: 75 },
+      { emoji: "🌈", label: "Rainbow", reward: 250 },
+      { emoji: "💎", label: "Gem", reward: 350 }
+    ];
+
+    // Slice colors
+    const colors = [
+      "#FF6384", "#36A2EB", "#FFCE56", "#4BC0C0",
+      "#9966FF", "#FF9F40", "#50C878", "#E2E2E2", "#FF69B4", "#FFD700"
+    ];
+
+    // Weighted probabilities (must sum ≈ 1.0)
+    const weights = [
+      0.02, // Super Jackpot 💰
+      0.05, // Jackpot 🧧
+      0.12, // Lucky 🍀
+      0.15, // Smile 😃
+      0.10, // Treat 🧁
+      0.14, // Party 🎉
+      0.12, // Mystery 🔮
+      0.15, // Rainbow 🌈
+      0.15  // Gem 💎
+    ];
+
+    const wheelCanvas = document.getElementById('wheel');
+    const ctx = wheelCanvas.getContext('2d');
+    const spinBtn = document.getElementById('spinBtn');
+    const resultDiv = document.getElementById('result');
+    const moneyDiv = document.getElementById('money');
+
+    let spinning = false;
+    let wheelRotation = 0; // radians
+    let money = 1000;
+    const spinCost = 100;
+
+    // Weighted random index
+    function weightedRandom(weights) {
+      let r = Math.random();
+      let sum = 0;
+      for (let i = 0; i < weights.length; i++) {
+        sum += weights[i];
+        if (r <= sum) return i;
+      }
+      return weights.length - 1; // fallback
+    }
+
+    // Draw the wheel
+    function drawWheel(rotation = 0) {
+      const radius = wheelCanvas.width / 2;
+      const centerX = wheelCanvas.width / 2;
+      const centerY = wheelCanvas.height / 2;
+      const sliceAngle = (2 * Math.PI) / slices.length;
+
+      ctx.clearRect(0, 0, wheelCanvas.width, wheelCanvas.height);
+
+      for (let i = 0; i < slices.length; i++) {
+        const angle = rotation + i * sliceAngle;
+        ctx.beginPath();
+        ctx.moveTo(centerX, centerY);
+        ctx.arc(centerX, centerY, radius, angle, angle + sliceAngle, false);
+        ctx.closePath();
+        ctx.fillStyle = colors[i % colors.length];
+        ctx.fill();
+        ctx.save();
+
+        // Draw emoji + label
+        ctx.translate(centerX, centerY);
+        ctx.rotate(angle + sliceAngle / 2);
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+
+        // Emoji
+        ctx.font = "28px Segoe UI Emoji, Apple Color Emoji, Noto Color Emoji, sans-serif";
+        ctx.fillStyle = "#000";
+        ctx.fillText(slices[i].emoji, radius * 0.6, -8);
+
+        // Label
+        ctx.font = "bold 14px sans-serif";
+        ctx.fillStyle = "#111";
+        ctx.fillText(slices[i].label, radius * 0.6, 20);
+
+        ctx.restore();
+      }
+
+      // Draw center hub 🎯
+      ctx.beginPath();
+      ctx.arc(centerX, centerY, radius * 0.18, 0, 2 * Math.PI);
+      ctx.fillStyle = "#FFD700";
+      ctx.fill();
+      ctx.strokeStyle = "#B09700";
+      ctx.lineWidth = 4;
+      ctx.stroke();
+
+      ctx.font = `${radius * 0.25}px serif`;
+      ctx.fillStyle = "#333";
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText("🎯", centerX, centerY);
+    }
+
+    drawWheel();
+
+    // Spin logic
+    spinBtn.onclick = function () {
+      if (spinning) return;
+      if (money < spinCost) {
+        resultDiv.textContent = "Not enough money!";
+        return;
+      }
+      spinning = true;
+      money -= spinCost;
+      moneyDiv.textContent = `Money: $${money}`;
+      resultDiv.textContent = "";
+
+      const sliceAngle = 2 * Math.PI / slices.length;
+      const pickedIndex = weightedRandom(weights);
+
+      const stopAngle = (3 * Math.PI / 2) - (pickedIndex * sliceAngle) - (sliceAngle / 2);
+      const extraSpins = 4;
+      const finalRotation = (2 * Math.PI * extraSpins) + stopAngle;
+
+      let start = null;
+      let duration = 3000;
+      let initialRotation = wheelRotation;
+
+      function animateWheel(ts) {
+        if (!start) start = ts;
+        let elapsed = ts - start;
+        let progress = Math.min(elapsed / duration, 1);
+        let eased = 1 - Math.pow(1 - progress, 3);
+        wheelRotation = initialRotation + eased * (finalRotation - initialRotation);
+        drawWheel(wheelRotation);
+
+        if (progress < 1) {
+          requestAnimationFrame(animateWheel);
+        } else {
+          spinning = false;
+          wheelRotation = finalRotation % (2 * Math.PI);
+          drawWheel(wheelRotation);
+
+          // Reward
+          const prize = slices[pickedIndex];
+          money += prize.reward;
+          moneyDiv.textContent = `Money: $${money}`;
+          resultDiv.textContent = `You won ${prize.emoji} ${prize.label}! +$${prize.reward}`;
+        }
+      }
+
+      requestAnimationFrame(animateWheel);
+    };
+  </script>
+</body>
+</html>
