@@ -105,15 +105,7 @@
     ];
 
     const weights = [
-      0.01, // Super Jackpot
-      0.03, // Jackpot
-      0.16, // Lucky
-      0.16, // Smile
-      0.12, // Treat
-      0.16, // Party
-      0.12, // Mystery
-      0.12, // Rainbow
-      0.12  // Gem
+      0.01, 0.03, 0.16, 0.16, 0.12, 0.16, 0.12, 0.12, 0.12
     ];
 
     const wheelCanvas = document.getElementById('wheel');
@@ -158,8 +150,8 @@
         ctx.fillStyle = colors[i % colors.length];
         ctx.fill();
 
-        // Draw emoji & label without rotating canvas
-        const textRadius = radius * 0.55;
+        // Draw emoji & label, moved outward
+        const textRadius = radius * 0.6; // bigger → moves emoji/text to the right
         const x = centerX + Math.cos(midAngle) * textRadius;
         const y = centerY + Math.sin(midAngle) * textRadius;
 
