@@ -104,17 +104,16 @@
       "#9966FF", "#FF9F40", "#50C878", "#E2E2E2", "#FF69B4"
     ];
 
-    // Updated weighted probabilities
     const weights = [
-      0.01, // Super Jackpot 💰 (1%)
-      0.03, // Jackpot 🧧 (3%)
-      0.16, // Lucky 🍀
-      0.16, // Smile 😃
-      0.12, // Treat 🧁
-      0.16, // Party 🎉
-      0.12, // Mystery 🔮
-      0.12, // Rainbow 🌈
-      0.12  // Gem 💎
+      0.01, // Super Jackpot
+      0.03, // Jackpot
+      0.16, // Lucky
+      0.16, // Smile
+      0.12, // Treat
+      0.16, // Party
+      0.12, // Mystery
+      0.12, // Rainbow
+      0.12  // Gem
     ];
 
     const wheelCanvas = document.getElementById('wheel');
@@ -147,31 +146,35 @@
       ctx.clearRect(0, 0, wheelCanvas.width, wheelCanvas.height);
 
       for (let i = 0; i < slices.length; i++) {
-        const angle = rotation + i * sliceAngle;
+        const startAngle = rotation + i * sliceAngle;
+        const endAngle = startAngle + sliceAngle;
+        const midAngle = (startAngle + endAngle) / 2;
+
+        // Draw slice
         ctx.beginPath();
         ctx.moveTo(centerX, centerY);
-        ctx.arc(centerX, centerY, radius, angle, angle + sliceAngle, false);
+        ctx.arc(centerX, centerY, radius, startAngle, endAngle, false);
         ctx.closePath();
         ctx.fillStyle = colors[i % colors.length];
         ctx.fill();
-        ctx.save();
 
-        ctx.translate(centerX, centerY);
-        ctx.rotate(angle + sliceAngle / 2);
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
+        // Draw emoji & label without rotating canvas
+        const textRadius = radius * 0.55;
+        const x = centerX + Math.cos(midAngle) * textRadius;
+        const y = centerY + Math.sin(midAngle) * textRadius;
+
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
 
         // Emoji
         ctx.font = `${radius * 0.18}px serif`;
         ctx.fillStyle = "#000";
-        ctx.fillText(slices[i].emoji, radius * 0.55, 0);
+        ctx.fillText(slices[i].emoji, x, y - radius * 0.05);
 
         // Label
         ctx.font = `bold ${radius * 0.09}px sans-serif`;
         ctx.fillStyle = "#222";
-        ctx.fillText(slices[i].label, radius * 0.55, radius * 0.18);
-
-        ctx.restore();
+        ctx.fillText(slices[i].label, x, y + radius * 0.08);
       }
 
       // Center hub
