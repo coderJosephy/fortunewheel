@@ -150,8 +150,8 @@
         ctx.fillStyle = colors[i % colors.length];
         ctx.fill();
 
-        // Draw emoji & label, outward placement
-        const textRadius = radius * 0.6;
+        // Adjust radius outward for Super Jackpot
+        const textRadius = slices[i].label === "Super Jackpot" ? radius * 0.63 : radius * 0.6;
         const x = centerX + Math.cos(midAngle) * textRadius;
         const y = centerY + Math.sin(midAngle) * textRadius;
 
@@ -163,9 +163,9 @@
         ctx.fillStyle = "#000";
         ctx.fillText(slices[i].emoji, x, y - radius * 0.05);
 
-        // Label, smaller for Super Jackpot
+        // Label, smaller font for Super Jackpot
         if (slices[i].label === "Super Jackpot") {
-          ctx.font = `bold ${radius * 0.07}px sans-serif`; // smaller font
+          ctx.font = `bold ${radius * 0.07}px sans-serif`;
         } else {
           ctx.font = `bold ${radius * 0.09}px sans-serif`;
         }
