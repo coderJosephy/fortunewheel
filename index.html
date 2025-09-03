@@ -1,61 +1,61 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Fortune Wheel Emoji Game</title>
-  <style>
-    body {
-      font-family: sans-serif;
-      background: #222;
-      color: #fff;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      min-height: 100vh;
-      margin: 0;
-      padding-top: 40px;
-    }
-    h1 { margin-bottom: 10px; }
-    #wheel-container { position: relative; width: 360px; height: 360px; margin: 20px 0; }
-    #wheel {
-      width: 100%;
-      height: 100%;
-      border-radius: 50%;
-      background: #333;
-      box-shadow: 0 0 20px #000;
-      position: absolute;
-      top: 0;
-      left: 0;
-    }
-    #pointer {
-      position: absolute;
-      top: -30px;
-      left: 50%;
-      transform: translateX(-50%);
-      font-size: 2.4em;
-      z-index: 10;
-      pointer-events: none;
-      text-shadow: 0 2px 8px #000;
-    }
-    #spinBtn {
-      background: #FFD700;
-      color: #333;
-      border: none;
-      border-radius: 8px;
-      padding: 12px 32px;
-      font-size: 1.2em;
-      cursor: pointer;
-      font-weight: bold;
-      margin-top: 10px;
-      margin-bottom: 12px;
-      box-shadow: 0 4px 12px #2228;
-      transition: background 0.2s;
-    }
-    #spinBtn:active { background: #e6c200; }
-    #money { font-size: 1.2em; margin-bottom: 12px; font-weight: bold; color: #0f0; }
-    #result { margin-top: 16px; font-size: 1.4em; font-weight: bold; min-height: 2em; }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Fortune Wheel Emoji Game</title>
+<style>
+body {
+  font-family: sans-serif;
+  background: #222;
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100vh;
+  margin: 0;
+  padding-top: 40px;
+}
+h1 { margin-bottom: 10px; }
+#wheel-container { position: relative; width: 360px; height: 360px; margin: 20px 0; }
+#wheel {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: #333;
+  box-shadow: 0 0 20px #000;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+#pointer {
+  position: absolute;
+  top: -30px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 2.4em;
+  z-index: 10;
+  pointer-events: none;
+  text-shadow: 0 2px 8px #000;
+}
+#spinBtn {
+  background: #FFD700;
+  color: #333;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 32px;
+  font-size: 1.2em;
+  cursor: pointer;
+  font-weight: bold;
+  margin-top: 10px;
+  margin-bottom: 12px;
+  box-shadow: 0 4px 12px #2228;
+  transition: background 0.2s;
+}
+#spinBtn:active { background: #e6c200; }
+#money { font-size: 1.2em; margin-bottom: 12px; font-weight: bold; color: #0f0; }
+#result { margin-top: 16px; font-size: 1.4em; font-weight: bold; min-height: 2em; }
+</style>
 </head>
 <body>
 <h1>🎰 Fortune Wheel</h1>
@@ -90,7 +90,7 @@ const resultDiv = document.getElementById('result');
 const moneyDiv = document.getElementById('money');
 
 let spinning = false;
-let wheelRotation = 0;
+let wheelRotation = Math.random() * Math.PI*2; // random initial rotation
 let money = 1000;
 const spinCost = 100;
 
@@ -116,7 +116,6 @@ function drawWheel(rotation=0){
     const end = start + sliceAngle;
     const mid = (start+end)/2;
 
-    // Slice
     ctx.beginPath();
     ctx.moveTo(cx,cy);
     ctx.arc(cx,cy,radius,start,end,false);
@@ -124,25 +123,21 @@ function drawWheel(rotation=0){
     ctx.fillStyle = colors[i%colors.length];
     ctx.fill();
 
-    // Emoji + Label along slice
     const textRadius = slices[i].label==="Super Jackpot"? radius*0.63 : radius*0.6;
     ctx.save();
     ctx.translate(cx,cy);
     ctx.rotate(mid);
 
-    // Emoji
     ctx.font = `${radius*0.18}px serif`;
     ctx.fillStyle = "#000";
     ctx.fillText(slices[i].emoji, textRadius, -radius*0.05);
 
-    // Label
     ctx.font = slices[i].label==="Super Jackpot"? `bold ${radius*0.07}px sans-serif` : `bold ${radius*0.09}px sans-serif`;
     ctx.fillStyle = "#222";
     ctx.fillText(slices[i].label, textRadius, radius*0.08);
     ctx.restore();
   }
 
-  // Center hub
   ctx.beginPath();
   ctx.arc(cx,cy,40,0,2*Math.PI);
   ctx.fillStyle="#FFD700";
