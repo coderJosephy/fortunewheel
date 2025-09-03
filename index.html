@@ -17,7 +17,7 @@
       padding-top: 40px;
     }
     h1 { margin-bottom: 10px; }
-    #wheel-container { position: relative; width: 340px; height: 340px; margin: 20px 0; }
+    #wheel-container { position: relative; width: 360px; height: 360px; margin: 20px 0; }
     #wheel {
       width: 100%;
       height: 100%;
@@ -61,7 +61,7 @@
 <h1>🎰 Fortune Wheel</h1>
 <div id="wheel-container">
   <div id="pointer">🔻</div>
-  <canvas id="wheel" width="340" height="340"></canvas>
+  <canvas id="wheel" width="360" height="360"></canvas>
 </div>
 <div id="money">Money: $1000</div>
 <button id="spinBtn">Spin! (-$100)</button>
@@ -82,3 +82,125 @@ const slices = [
 
 const colors = ["#FF6384","#36A2EB","#FFCE56","#4BC0C0","#9966FF","#FF9F40","#50C878","#E2E2E2","#FF69B4"];
 const weights = [0.01,0.03,0.16,0.16,0.12,0.16,0.12,0.12,0.12];
+
+const canvas = document.getElementById('wheel');
+const ctx = canvas.getContext('2d');
+const spinBtn = document.getElementById('spinBtn');
+const resultDiv = document.getElementById('result');
+const moneyDiv = document.getElementById('money');
+
+let spinning = false;
+let wheelRotation = 0;
+let money = 1000;
+const spinCost = 100;
+
+function weightedRandom(weights){
+  let r = Math.random();
+  let sum = 0;
+  for(let i=0;i<weights.length;i++){
+    sum+=weights[i];
+    if(r<=sum) return i;
+  }
+  return weights.length-1;
+}
+
+function drawWheel(rotation=0){
+  const radius = canvas.width/2;
+  const cx = radius;
+  const cy = radius;
+  const sliceAngle = 2*Math.PI/slices.length;
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+
+  for(let i=0;i<slices.length;i++){
+    const start = rotation + i*sliceAngle;
+    const end = start + sliceAngle;
+    const mid = (start+end)/2;
+
+    // Slice
+    ctx.beginPath();
+    ctx.moveTo(cx,cy);
+    ctx.arc(cx,cy,radius,start,end,false);
+    ctx.closePath();
+    ctx.fillStyle = colors[i%colors.length];
+    ctx.fill();
+
+    // Emoji + Label along slice
+    const textRadius = slices[i].label==="Super Jackpot"? radius*0.63 : radius*0.6;
+    ctx.save();
+    ctx.translate(cx,cy);
+    ctx.rotate(mid);
+
+    // Emoji
+    ctx.font = `${radius*0.18}px serif`;
+    ctx.fillStyle = "#000";
+    ctx.fillText(slices[i].emoji, textRadius, -radius*0.05);
+
+    // Label
+    ctx.font = slices[i].label==="Super Jackpot"? `bold ${radius*0.07}px sans-serif` : `bold ${radius*0.09}px sans-serif`;
+    ctx.fillStyle = "#222";
+    ctx.fillText(slices[i].label, textRadius, radius*0.08);
+    ctx.restore();
+  }
+
+  // Center hub
+  ctx.beginPath();
+  ctx.arc(cx,cy,40,0,2*Math.PI);
+  ctx.fillStyle="#FFD700";
+  ctx.fill();
+  ctx.strokeStyle="#B09700";
+  ctx.lineWidth=4;
+  ctx.stroke();
+  ctx.font="2em serif";
+  ctx.fillStyle="#333";
+  ctx.textAlign='center';
+  ctx.textBaseline='middle';
+  ctx.fillText("🎯",cx,cy);
+}
+
+drawWheel(wheelRotation);
+
+spinBtn.onclick = function(){
+  if(spinning) return;
+  if(money<spinCost){
+    resultDiv.textContent="Not enough money!";
+    return;
+  }
+  spinning=true;
+  money-=spinCost;
+  moneyDiv.textContent=`Money: $${money}`;
+  resultDiv.textContent="";
+
+  const sliceAngle = 2*Math.PI/slices.length;
+  const pickedIndex = weightedRandom(weights);
+  const stopAngle = (3*Math.PI/2) - (pickedIndex*sliceAngle) - (sliceAngle/2);
+
+  const extraSpins = 4;
+  const finalRotation = wheelRotation + (2*Math.PI*extraSpins) + stopAngle - (wheelRotation % (2*Math.PI));
+
+  let start=null;
+  const duration=3000;
+  const initialRotation = wheelRotation;
+
+  function animateWheel(ts){
+    if(!start) start=ts;
+    const elapsed = ts-start;
+    const progress = Math.min(elapsed/duration,1);
+    const eased = 1-Math.pow(1-progress,3);
+    wheelRotation = initialRotation + eased*(finalRotation-initialRotation);
+    drawWheel(wheelRotation);
+    if(progress<1) requestAnimationFrame(animateWheel);
+    else{
+      spinning=false;
+      wheelRotation = wheelRotation % (2*Math.PI);
+      drawWheel(wheelRotation);
+      const prize = slices[pickedIndex];
+      money += prize.reward;
+      moneyDiv.textContent=`Money: $${money}`;
+      resultDiv.textContent=`You won ${prize.emoji} ${prize.label}! (+$${prize.reward})`;
+    }
+  }
+  requestAnimationFrame(animateWheel);
+};
+</script>
+</body>
+</html>
