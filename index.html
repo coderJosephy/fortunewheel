@@ -124,14 +124,17 @@ function drawWheel(rotation=0){
     ctx.fillStyle = colors[i%colors.length];
     ctx.fill();
 
-    // text + emoji
+    // emoji + text tilted with slice
     const textRadius = radius*0.62;
     ctx.save();
     ctx.translate(cx,cy);
-    ctx.rotate(mid);
+    ctx.rotate(mid); // rotate to slice middle line
 
     ctx.textAlign="center";
     ctx.textBaseline="middle";
+
+    // rotate further so text follows slice angle
+    ctx.rotate(Math.PI/2);
 
     // emoji
     ctx.font = `${radius*0.18}px serif`;
