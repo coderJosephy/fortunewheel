@@ -116,6 +116,7 @@ function drawWheel(rotation=0){
     const end = start + sliceAngle;
     const mid = (start+end)/2;
 
+    // slice background
     ctx.beginPath();
     ctx.moveTo(cx,cy);
     ctx.arc(cx,cy,radius,start,end,false);
@@ -123,20 +124,24 @@ function drawWheel(rotation=0){
     ctx.fillStyle = colors[i%colors.length];
     ctx.fill();
 
-    const textRadius = radius*0.6;
+    // text + emoji
+    const textRadius = radius*0.62;
     ctx.save();
     ctx.translate(cx,cy);
     ctx.rotate(mid);
 
+    ctx.textAlign="center";
+    ctx.textBaseline="middle";
+
+    // emoji
     ctx.font = `${radius*0.18}px serif`;
     ctx.fillStyle = "#000";
-    ctx.textAlign="center";
-    ctx.fillText(slices[i].emoji, textRadius, -radius*0.05);
+    ctx.fillText(slices[i].emoji, textRadius, -12);
 
+    // label
     ctx.font = `bold ${radius*0.09}px sans-serif`;
     ctx.fillStyle = "#222";
-    ctx.textAlign="center";
-    ctx.fillText(slices[i].label, textRadius, radius*0.08);
+    ctx.fillText(slices[i].label, textRadius, 18);
 
     ctx.restore();
   }
