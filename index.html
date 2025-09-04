@@ -145,19 +145,20 @@ function drawWheel(rotation=0){
     ctx.restore();
   }
 
-  // center target
+  // center hub + 🎯 perfectly aligned
   ctx.beginPath();
-  ctx.arc(cx,cy,40,0,2*Math.PI);
-  ctx.fillStyle="#FFD700";
+  ctx.arc(cx, cy, 36, 0, 2*Math.PI); // slightly smaller, exact center
+  ctx.fillStyle = "#FFD700";
   ctx.fill();
-  ctx.strokeStyle="#B09700";
-  ctx.lineWidth=4;
+  ctx.strokeStyle = "#B09700";
+  ctx.lineWidth = 4;
   ctx.stroke();
-  ctx.font="2em serif";
-  ctx.fillStyle="#333";
-  ctx.textAlign='center';
-  ctx.textBaseline='middle';
-  ctx.fillText("🎯",cx,cy);
+
+  ctx.font = "1.8em serif";
+  ctx.fillStyle = "#333";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.fillText("🎯", cx, cy);
 }
 
 drawWheel(wheelRotation);
