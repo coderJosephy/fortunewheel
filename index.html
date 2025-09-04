@@ -10,64 +10,164 @@ body {
   background: #222;
   color: #fff;
   display: flex;
-  flex-direction: column;
-  align-items: center;
+  flex-direction: row;
   min-height: 100vh;
   margin: 0;
-  padding-top: 40px;
 }
-h1 { margin-bottom: 10px; }
-#wheel-container { position: relative; width: 360px; height: 360px; margin: 20px 0; }
-#wheel {
-  width: 100%;
-  height: 100%;
-  border-radius: 50%;
+
+/* Game area */
+#game {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 20px;
+}
+
+/* Store */
+#storePanel {
+  width: 260px;
+  background: #111;
+  padding: 20px;
+  border-right: 2px solid #444;
+  display: none;
+  flex-direction: column;
+  gap: 10px;
+}
+#storePanel h2 {
+  text-align: center;
+}
+.store-btn {
+  background: #FFD700;
+  color: #222;
+  border: none;
+  padding: 10px;
+  font-weight: bold;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: 0.2s;
+}
+.store-btn:disabled {
+  background: #555;
+  color: #aaa;
+  cursor: not-allowed;
+}
+
+/* Right house panel */
+#housePanel {
+  width: 260px;
+  background: #111;
+  padding: 20px;
+  border-left: 2px solid #444;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+#housePanel h2 {
+  margin-bottom: 10px;
+}
+
+/* Wheels */
+#wheel-container {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 40px;
+  margin-top: 20px;
+}
+.wheel-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+canvas {
   background: #333;
+  border-radius: 50%;
   box-shadow: 0 0 20px #000;
-  position: absolute;
-  top: 0;
-  left: 0;
 }
 #pointer {
-  position: absolute;
-  top: -30px;
-  left: 50%;
-  transform: translateX(-50%);
-  font-size: 2.4em;
-  z-index: 10;
-  pointer-events: none;
-  text-shadow: 0 2px 8px #000;
+  position: relative;
+  top: -25px;
+  font-size: 2.2em;
 }
-#spinBtn {
+.spinBtn {
+  margin-top: 5px;
+  padding: 10px 22px;
+  font-size: 1.1em;
   background: #FFD700;
-  color: #333;
   border: none;
-  border-radius: 8px;
-  padding: 12px 32px;
-  font-size: 1.2em;
-  cursor: pointer;
+  border-radius: 6px;
   font-weight: bold;
-  margin-top: 10px;
-  margin-bottom: 12px;
-  box-shadow: 0 4px 12px #2228;
-  transition: background 0.2s;
+  cursor: pointer;
+  transition: 0.2s;
 }
-#spinBtn:active { background: #e6c200; }
-#money { font-size: 1.2em; margin-bottom: 12px; font-weight: bold; color: #0f0; }
-#result { margin-top: 16px; font-size: 1.4em; font-weight: bold; min-height: 2em; }
+.spinBtn:active { background: #e6c200; }
+
+#money {
+  font-size: 1.2em;
+  font-weight: bold;
+  color: #0f0;
+  margin: 15px;
+}
+#result { font-size: 1.2em; font-weight: bold; min-height: 2em; }
 </style>
 </head>
 <body>
-<h1>🎰 Fortune Wheel</h1>
-<div id="wheel-container">
-  <div id="pointer">🔻</div>
-  <canvas id="wheel" width="360" height="360"></canvas>
+
+<!-- Store Panel -->
+<div id="storePanel">
+  <h2>🏪 Store</h2>
+  <button id="buy2x" class="store-btn">Buy 2x Multiplier ($500)</button>
+  <button id="buy3x" class="store-btn" disabled>Buy 3x Multiplier ($1500)</button>
+  <button id="buy4x" class="store-btn" disabled>Buy 4x Multiplier ($5000)</button>
+  <button id="buyWheel2" class="store-btn">Buy Second Wheel ($2000)</button>
+  <button id="buySmallHouse" class="store-btn">Buy Small House ($3000)</button>
+  <button id="buyLargeHouse" class="store-btn" disabled>Buy Large House ($8000)</button>
+  <button id="buyDecoration" class="store-btn" disabled>Buy Decoration ($500)</button>
+  <button id="closeStore" class="store-btn">Close Store</button>
 </div>
-<div id="money">Money: $1000</div>
-<button id="spinBtn">Spin! (-$100)</button>
-<div id="result"></div>
+
+<!-- Main Game -->
+<div id="game">
+  <h1>🎰 Fortune Wheel</h1>
+  <div id="money">Money: $1000</div>
+  <button id="openStore" class="spinBtn">🏪 Open Store</button>
+
+  <div id="wheel-container">
+    <!-- Wheel 1 -->
+    <div class="wheel-box" id="wheelBox1">
+      <div id="pointer">🔻</div>
+      <canvas id="wheel1" width="300" height="300"></canvas>
+      <button id="spin1" class="spinBtn">Spin! (-$100)</button>
+    </div>
+    <!-- Wheel 2 (locked until bought) -->
+    <div class="wheel-box" id="wheelBox2" style="display:none;">
+      <div id="pointer">🔻</div>
+      <canvas id="wheel2" width="300" height="300"></canvas>
+      <button id="spin2" class="spinBtn">Spin! (-$100)</button>
+    </div>
+  </div>
+  <div id="result"></div>
+</div>
+
+<!-- House Panel -->
+<div id="housePanel">
+  <h2>🏠 House</h2>
+  <div id="houseStatus">No house yet</div>
+  <div id="decorations"></div>
+</div>
 
 <script>
+// --- GAME DATA ---
+let money = 1000;
+const spinCost = 100;
+let multiplier = 1;
+let has2x = false, has3x = false, has4x = false;
+let hasSecondWheel = false;
+let house = null; // "small" or "large"
+let decorations = [];
+
+// slices
 const slices = [
   { emoji: "💰", label: "Super Jackpot", reward: 1000 },
   { emoji: "🧧", label: "Jackpot", reward: 500 },
@@ -79,26 +179,13 @@ const slices = [
   { emoji: "🌈", label: "Rainbow", reward: 250 },
   { emoji: "💎", label: "Gem", reward: 350 }
 ];
-
 const colors = ["#FF6384","#36A2EB","#FFCE56","#4BC0C0",
                 "#9966FF","#FF9F40","#50C878","#E2E2E2","#FF69B4"];
-
 const weights = [0.01,0.03,0.16,0.16,0.12,0.16,0.12,0.12,0.12];
 
-const canvas = document.getElementById('wheel');
-const ctx = canvas.getContext('2d');
-const spinBtn = document.getElementById('spinBtn');
-const resultDiv = document.getElementById('result');
-const moneyDiv = document.getElementById('money');
-
-let spinning = false;
-let wheelRotation = Math.random() * Math.PI*2; // random start angle
-let money = 1000;
-const spinCost = 100;
-
+// --- UTILS ---
 function weightedRandom(weights){
-  let r = Math.random();
-  let sum = 0;
+  let r = Math.random(), sum=0;
   for(let i=0;i<weights.length;i++){
     sum+=weights[i];
     if(r<=sum) return i;
@@ -106,105 +193,167 @@ function weightedRandom(weights){
   return weights.length-1;
 }
 
-function drawWheel(rotation=0){
-  const radius = canvas.width/2;
-  const cx = radius;
-  const cy = radius;
+// --- DRAW WHEEL ---
+function drawWheel(ctx, rotation=0){
+  const radius = ctx.canvas.width/2;
+  const cx = radius, cy = radius;
   const sliceAngle = 2*Math.PI/slices.length;
-  ctx.clearRect(0,0,canvas.width,canvas.height);
+  ctx.clearRect(0,0,ctx.canvas.width,ctx.canvas.height);
 
   for(let i=0;i<slices.length;i++){
     const start = rotation + i*sliceAngle;
-    const end = start + sliceAngle;
+    const end = start+sliceAngle;
     const mid = (start+end)/2;
 
     ctx.beginPath();
     ctx.moveTo(cx,cy);
-    ctx.arc(cx,cy,radius,start,end,false);
+    ctx.arc(cx,cy,radius,start,end);
     ctx.closePath();
     ctx.fillStyle = colors[i%colors.length];
     ctx.fill();
 
-    // emoji + text aligned with slice mid line
-    const textRadius = radius * 0.62;
+    const textRadius = radius*0.62;
     ctx.save();
-    ctx.translate(cx, cy);
+    ctx.translate(cx,cy);
     ctx.rotate(mid);
 
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-
-    ctx.font = `${radius * 0.18}px serif`;
-    ctx.fillStyle = "#000";
+    ctx.textAlign="center"; ctx.textBaseline="middle";
+    ctx.font=`${radius*0.18}px serif`;
+    ctx.fillStyle="#000";
     ctx.fillText(slices[i].emoji, textRadius, -8);
 
-    ctx.font = `bold ${radius * 0.09}px sans-serif`;
-    ctx.fillStyle = "#222";
+    ctx.font=`bold ${radius*0.09}px sans-serif`;
+    ctx.fillStyle="#222";
     ctx.fillText(slices[i].label, textRadius, 18);
 
     ctx.restore();
   }
 
-  // center hub + 🎯 perfectly aligned
   ctx.beginPath();
-  ctx.arc(cx, cy, 36, 0, 2*Math.PI); // slightly smaller, exact center
-  ctx.fillStyle = "#FFD700";
-  ctx.fill();
-  ctx.strokeStyle = "#B09700";
-  ctx.lineWidth = 4;
-  ctx.stroke();
-
-  ctx.font = "1.8em serif";
-  ctx.fillStyle = "#333";
-  ctx.textAlign = "center";
-  ctx.textBaseline = "middle";
-  ctx.fillText("🎯", cx, cy);
+  ctx.arc(cx,cy,34,0,2*Math.PI);
+  ctx.fillStyle="#FFD700"; ctx.fill();
+  ctx.strokeStyle="#B09700"; ctx.lineWidth=4; ctx.stroke();
+  ctx.font="1.6em serif"; ctx.fillStyle="#333";
+  ctx.textAlign="center"; ctx.textBaseline="middle";
+  ctx.fillText("🎯",cx,cy);
 }
 
-drawWheel(wheelRotation);
+// --- WHEEL LOGIC ---
+function setupWheel(wheelId, spinBtnId){
+  const canvas=document.getElementById(wheelId);
+  const ctx=canvas.getContext("2d");
+  let rotation=Math.random()*Math.PI*2;
+  let spinning=false;
 
-spinBtn.onclick = function(){
-  if(spinning) return;
-  if(money<spinCost){
-    resultDiv.textContent="Not enough money!";
-    return;
-  }
-  spinning=true;
-  money-=spinCost;
-  moneyDiv.textContent=`Money: $${money}`;
-  resultDiv.textContent="";
+  drawWheel(ctx, rotation);
 
-  const sliceAngle = 2*Math.PI/slices.length;
-  const pickedIndex = weightedRandom(weights);
-  const stopAngle = (3*Math.PI/2) - (pickedIndex*sliceAngle) - (sliceAngle/2);
-
-  const extraSpins = 4;
-  const finalRotation = wheelRotation + (2*Math.PI*extraSpins) + stopAngle - (wheelRotation % (2*Math.PI));
-
-  let start=null;
-  const duration=3000;
-  const initialRotation = wheelRotation;
-
-  function animateWheel(ts){
-    if(!start) start=ts;
-    const elapsed = ts-start;
-    const progress = Math.min(elapsed/duration,1);
-    const eased = 1-Math.pow(1-progress,3);
-    wheelRotation = initialRotation + eased*(finalRotation-initialRotation);
-    drawWheel(wheelRotation);
-    if(progress<1) requestAnimationFrame(animateWheel);
-    else{
-      spinning=false;
-      wheelRotation = wheelRotation % (2*Math.PI);
-      drawWheel(wheelRotation);
-      const prize = slices[pickedIndex];
-      money += prize.reward;
-      moneyDiv.textContent=`Money: $${money}`;
-      resultDiv.textContent=`You won ${prize.emoji} ${prize.label}! (+$${prize.reward})`;
+  document.getElementById(spinBtnId).onclick=function(){
+    if(spinning) return;
+    if(money<spinCost){
+      document.getElementById("result").textContent="Not enough money!";
+      return;
     }
+    spinning=true;
+    money-=spinCost;
+    updateMoney();
+    document.getElementById("result").textContent="";
+
+    const sliceAngle=2*Math.PI/slices.length;
+    const pickedIndex=weightedRandom(weights);
+    const stopAngle=(3*Math.PI/2)-(pickedIndex*sliceAngle)-(sliceAngle/2);
+    const extraSpins=4;
+    const finalRotation=rotation+(2*Math.PI*extraSpins)+stopAngle-(rotation%(2*Math.PI));
+
+    let start=null; const duration=3000; const initialRotation=rotation;
+    function animate(ts){
+      if(!start) start=ts;
+      const progress=Math.min((ts-start)/duration,1);
+      const eased=1-Math.pow(1-progress,3);
+      rotation=initialRotation+eased*(finalRotation-initialRotation);
+      drawWheel(ctx, rotation);
+      if(progress<1) requestAnimationFrame(animate);
+      else{
+        spinning=false;
+        rotation=rotation%(2*Math.PI);
+        drawWheel(ctx, rotation);
+
+        const prize=slices[pickedIndex];
+        const reward=prize.reward*multiplier;
+        money+=reward;
+        updateMoney();
+        document.getElementById("result").textContent=
+          `You won ${prize.emoji} ${prize.label}! (+$${reward})`;
+      }
+    }
+    requestAnimationFrame(animate);
+  };
+}
+
+// --- UPDATE MONEY ---
+function updateMoney(){
+  document.getElementById("money").textContent=`Money: $${money}`;
+}
+
+// --- STORE LOGIC ---
+document.getElementById("openStore").onclick=()=>{document.getElementById("storePanel").style.display="flex";}
+document.getElementById("closeStore").onclick=()=>{document.getElementById("storePanel").style.display="none";}
+
+document.getElementById("buy2x").onclick=()=>{
+  if(money>=500&&!has2x){
+    money-=500; has2x=true; multiplier=2; updateMoney();
+    document.getElementById("buy2x").disabled=true;
+    document.getElementById("buy3x").disabled=false;
   }
-  requestAnimationFrame(animateWheel);
 };
+document.getElementById("buy3x").onclick=()=>{
+  if(money>=1500&&has2x&&!has3x){
+    money-=1500; has3x=true; multiplier=3; updateMoney();
+    document.getElementById("buy3x").disabled=true;
+    document.getElementById("buy4x").disabled=false;
+  }
+};
+document.getElementById("buy4x").onclick=()=>{
+  if(money>=5000&&has3x&&!has4x){
+    money-=5000; has4x=true; multiplier=4; updateMoney();
+    document.getElementById("buy4x").disabled=true;
+  }
+};
+document.getElementById("buyWheel2").onclick=()=>{
+  if(money>=2000&&!hasSecondWheel){
+    money-=2000; hasSecondWheel=true; updateMoney();
+    document.getElementById("wheelBox2").style.display="flex";
+    setupWheel("wheel2","spin2");
+    document.getElementById("buyWheel2").disabled=true;
+  }
+};
+document.getElementById("buySmallHouse").onclick=()=>{
+  if(money>=3000&&!house){
+    money-=3000; house="small"; updateMoney();
+    document.getElementById("houseStatus").textContent="Small House 🏡";
+    document.getElementById("buySmallHouse").disabled=true;
+    document.getElementById("buyLargeHouse").disabled=false;
+    document.getElementById("buyDecoration").disabled=false;
+  }
+};
+document.getElementById("buyLargeHouse").onclick=()=>{
+  if(money>=8000&&house==="small"){
+    money-=8000; house="large"; updateMoney();
+    document.getElementById("houseStatus").textContent="Large House 🏰";
+    document.getElementById("buyLargeHouse").disabled=true;
+  }
+};
+document.getElementById("buyDecoration").onclick=()=>{
+  if(money>=500&&house){
+    if(house==="small"&&decorations.length>=2) return;
+    money-=500; decorations.push("🎀");
+    updateMoney();
+    document.getElementById("decorations").textContent=decorations.join(" ");
+  }
+};
+
+// --- INIT ---
+setupWheel("wheel1","spin1");
+updateMoney();
 </script>
 </body>
 </html>
